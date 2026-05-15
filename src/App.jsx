@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  Map,
   Shield,
   Droplets,
   Trees,
@@ -9,16 +10,15 @@ import {
   Compass,
   Users,
   Star,
+  Play,
   Radio,
   Camera,
   Route,
   Apple,
-  Tent,
-  MapPinned,
-  CloudSun,
+  Sparkles,
   Waves,
+  Tent,
   MessageCircle,
-  Bookmark,
 } from "lucide-react";
 
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mjglnekz";
@@ -28,44 +28,14 @@ const backgrounds = [
   "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=2400&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?q=80&w=2400&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=2400&auto=format&fit=crop",
- ];
-
-const demoScenes = [
-  {
-    label: "01 / Choose outing",
-    title: "Pick your trip style",
-    text: "TrailHaven adapts the analysis for hiking, camping, survival practice, or emergency planning.",
-    score: "--",
-    tone: "Tap",
-  },
-  {
-    label: "02 / Scan map",
-    title: "Scan nearby potential",
-    text: "Animated pins reveal stronger and weaker outdoor areas across the map.",
-    score: "72%",
-    tone: "Solid",
-  },
-  {
-    label: "03 / Read place",
-    title: "Understand the place read",
-    text: "Water, shelter, terrain and weather risk are compared before the user commits.",
-    score: "61%",
-    tone: "Good",
-  },
-  {
-    label: "04 / Save & compare",
-    title: "Build an outdoor shortlist",
-    text: "Users save promising locations and compare them for the exact outing they have in mind.",
-    score: "78%",
-    tone: "Saved",
-  },
 ];
 
 export default function App() {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [bg, setBg] = useState(0);
-  const [demoStep, setDemoStep] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -75,20 +45,19 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setDemoStep((current) => (current + 1) % demoScenes.length);
-    }, 2800);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  const activeScene = demoScenes[demoStep];
-
   async function submit(e) {
     e.preventDefault();
 
-    if (!email.trim()) return;
+    const cleanEmail = email.trim();
+
+    if (!cleanEmail) {
+      setError("Please enter your email first.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setDone(false);
 
     try {
       const response = await fetch(FORMSPREE_ENDPOINT, {
@@ -98,20 +67,22 @@ export default function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
+          email: cleanEmail,
           project: "TrailHaven Waitlist",
-          source: "trailhaven-website",
+          source: "TrailHaven landing page",
         }),
       });
 
-      if (response.ok) {
-        setDone(true);
-        setEmail("");
-      } else {
-        alert("Something went wrong. Please try again.");
+      if (!response.ok) {
+        throw new Error("Formspree submission failed");
       }
-    } catch (error) {
-      alert("Could not submit email. Please try again.");
+
+      setDone(true);
+      setEmail("");
+    } catch (err) {
+      setError("Could not join the waitlist. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -166,12 +137,13 @@ export default function App() {
               onChange={(e) => setEmail(e.target.value)}
             />
 
-            <button>
-              Join waitlist <ArrowRight size={18} />
+            <button disabled={loading}>
+              {loading ? "Joining..." : "Join waitlist"} <ArrowRight size={18} />
             </button>
           </form>
 
           {done && <small>You’re on the early access list.</small>}
+          {error && <small className="errorText">{error}</small>}
 
           <div className="proof">
             <span>1,247+ early explorers interested</span>
@@ -256,113 +228,37 @@ export default function App() {
         </div>
       </section>
 
-      <section className="section demoShowcase" id="demo">
-        <div className="demoIntro">
-          <span>Interactive product showcase</span>
-          <h2>See the app think through the outdoors.</h2>
+      <section className="section demo" id="demo">
+        <div>
+          <div className="sectionHeader">
+            <span>Product vision</span>
+            <h2>A startup-style demo section for the app.</h2>
+          </div>
+
           <p>
-            A product-style walkthrough showing how TrailHaven can scan an area,
-            score outdoor potential, compare places, and help users plan smarter.
+            Later this can become a real video showing the map zoom, survival
+            score, water layer, shelter layer, campsite reviews and community
+            posts.
           </p>
 
-          <div className="demoSequence">
-            {demoScenes.map((scene, index) => (
-              <button
-                key={scene.label}
-                type="button"
-                className={`sequenceStep ${index === demoStep ? "active" : ""}`}
-                onClick={() => setDemoStep(index)}
-              >
-                <span>{scene.label}</span>
-                <strong>{scene.title}</strong>
-              </button>
-            ))}
-          </div>
+          <button className="watch">
+            <Play size={18} />
+            Watch preview
+          </button>
         </div>
 
-        <div className="demoGrid">
-          <div className="demoMapCard">
-            <div className="demoMapTop">
-              <div>
-                <span>{activeScene.label}</span>
-                <h3>{activeScene.title}</h3>
-                <p>{activeScene.text}</p>
-              </div>
-
-              <div className={`demoScoreBubble scene${demoStep}`}>
-                <strong>{activeScene.score}</strong>
-                <small>{activeScene.tone}</small>
-              </div>
-            </div>
-
-            <div className="demoMap">
-              <div className="mapGlow"></div>
-              <div className="scanRing ringOne"></div>
-              <div className="scanRing ringTwo"></div>
-
-              <div className={`mapPin green pinOne ${demoStep >= 1 ? "lit" : ""}`}>77%</div>
-              <div className={`mapPin yellow pinTwo ${demoStep >= 2 ? "lit" : ""}`}>61%</div>
-              <div className={`mapPin orange pinThree ${demoStep >= 1 ? "lit" : ""}`}>49%</div>
-              <div className={`mapPin green pinFour ${demoStep >= 3 ? "lit" : ""}`}>73%</div>
-
-              <div className="mapBottomSheet">
-                <div>
-                  <span>Forest mountain in Romania</span>
-                  <h4>Carpathian Forest Arc</h4>
-                  <p>Strong shelter value, good water access, mixed terrain risk.</p>
-                </div>
-
-                <button>
-                  View notes <ArrowRight size={16} />
-                </button>
-              </div>
-            </div>
+        <div className="demoPanel">
+          <div className="demoTop">
+            <span>Live area scan</span>
+            <Sparkles size={18} />
           </div>
 
-          <div className="demoSide">
-            <div className="outingCard">
-              <span>Outing modes</span>
-              <h3>Choose what you're planning.</h3>
-
-              <div className="modePills">
-                <div>
-                  <Route size={18} />
-                  Hiking
-                </div>
-                <div>
-                  <Tent size={18} />
-                  Camping
-                </div>
-                <div>
-                  <Compass size={18} />
-                  Survival practice
-                </div>
-                <div>
-                  <Shield size={18} />
-                  Emergency planning
-                </div>
-              </div>
-            </div>
-
-            <div className="readCard">
-              <div className="readTop">
-                <span>Place read</span>
-                <strong>61%</strong>
-              </div>
-
-              <Metric icon={<Droplets size={17} />} label="Water" value="79%" />
-              <Metric icon={<Trees size={17} />} label="Shelter" value="86%" />
-              <Metric icon={<Mountain size={17} />} label="Terrain" value="54%" />
-              <Metric icon={<CloudSun size={17} />} label="Weather risk" value="48%" />
-            </div>
+          <div className="bars">
+            <Bar icon={<Waves size={18} />} label="Water access" value="82%" width="82%" />
+            <Bar icon={<Trees size={18} />} label="Shelter score" value="74%" width="74%" />
+            <Bar icon={<Tent size={18} />} label="Camping quality" value="68%" width="68%" />
+            <Bar icon={<MessageCircle size={18} />} label="Community trust" value="91%" width="91%" />
           </div>
-        </div>
-
-        <div className="demoMiniCards">
-          <DemoMini icon={<Waves />} title="Water access" text="Rivers, lakes and nearby water signals." />
-          <DemoMini icon={<Trees />} title="Shelter value" text="Forest cover, terrain and usable protection." />
-          <DemoMini icon={<MessageCircle />} title="Community notes" text="Real observations from people who visited." />
-          <DemoMini icon={<Bookmark />} title="Saved places" text="Compare areas before choosing a trip." />
         </div>
       </section>
 
@@ -624,11 +520,20 @@ export default function App() {
           cursor: pointer;
         }
 
+        button:disabled {
+          cursor: not-allowed;
+          opacity: 0.72;
+        }
+
         small {
           display: block;
           margin-top: 14px;
           color: #9dffbf;
           font-weight: 900;
+        }
+
+        .errorText {
+          color: #ffb4a8;
         }
 
         .proof {
@@ -908,419 +813,67 @@ export default function App() {
           line-height: 1.6;
         }
 
-        .demoShowcase {
-          display: flex;
-          flex-direction: column;
-          gap: 40px;
-          overflow: hidden;
-        }
-
-        .demoIntro {
-          max-width: 820px;
-        }
-
-        .demoIntro span {
-          color: #9dffbf;
-          text-transform: uppercase;
-          letter-spacing: 2px;
-          font-weight: 900;
-          font-size: 13px;
-        }
-
-        .demoIntro h2 {
-          font-size: clamp(38px, 5vw, 68px);
-          line-height: 1;
-          margin: 18px 0 24px;
-          letter-spacing: -3px;
-        }
-
-        .demoSequence {
+        .demo {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 12px;
-          margin-top: 28px;
+          grid-template-columns: 0.9fr 1.1fr;
+          gap: 34px;
+          align-items: center;
         }
 
-        .sequenceStep {
-          text-align: left;
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 8px;
-          padding: 16px;
-          border-radius: 20px;
-          background: rgba(255,255,255,0.07);
-          border: 1px solid rgba(255,255,255,0.1);
-          color: white;
-          transition: 0.35s ease;
+        .watch {
+          background: white;
         }
 
-        .sequenceStep span {
-          color: rgba(255,255,255,0.48);
-          font-size: 11px;
-          letter-spacing: 1.5px;
-          text-transform: uppercase;
-          font-weight: 900;
-        }
-
-        .sequenceStep strong {
-          font-size: 14px;
-          line-height: 1.25;
-        }
-
-        .sequenceStep.active {
-          background: rgba(141,255,176,0.14);
-          border-color: rgba(157,255,191,0.45);
-          box-shadow: 0 18px 50px rgba(0,0,0,0.25);
-          transform: translateY(-3px);
-        }
-
-
-        .demoGrid {
-          display: grid;
-          grid-template-columns: 1.2fr 0.8fr;
-          gap: 24px;
-        }
-
-        .demoMapCard,
-        .outingCard,
-        .readCard,
-        .demoMiniCards > div {
+        .demoPanel {
           border-radius: 32px;
-          background: rgba(255,255,255,0.08);
+          padding: 28px;
+          background:
+            linear-gradient(135deg, rgba(141,255,176,0.12), rgba(255,255,255,0.05)),
+            rgba(0,0,0,0.18);
           border: 1px solid rgba(255,255,255,0.13);
-          backdrop-filter: blur(22px);
-          box-shadow: 0 24px 80px rgba(0,0,0,0.22);
         }
 
-        .demoMapCard {
-          padding: 26px;
-          min-height: 650px;
-        }
-
-        .demoMapTop {
+        .demoTop {
           display: flex;
           justify-content: space-between;
-          gap: 24px;
-          margin-bottom: 22px;
-        }
-
-        .demoMapTop span,
-        .outingCard span,
-        .readTop span {
-          color: #9dffbf;
           text-transform: uppercase;
           letter-spacing: 2px;
-          font-weight: 900;
+          color: rgba(255,255,255,0.58);
           font-size: 12px;
-        }
-
-        .demoMapTop h3,
-        .outingCard h3 {
-          font-size: 36px;
-          line-height: 1;
-          margin: 12px 0 0;
-          max-width: 480px;
-        }
-
-        .demoMapTop p {
-          font-size: 15px;
-          margin: 12px 0 0;
-          max-width: 500px;
-          color: rgba(255,255,255,0.64);
-        }
-
-        .demoScoreBubble {
-          width: 104px;
-          height: 104px;
-          border-radius: 28px;
-          border: 1px solid rgba(157,255,191,0.5);
-          display: grid;
-          place-items: center;
-          text-align: center;
-          background: rgba(141,255,176,0.08);
-          flex-shrink: 0;
-        }
-
-        .demoScoreBubble strong {
-          display: block;
-          font-size: 30px;
-          color: #9dffbf;
-        }
-
-        .demoScoreBubble small {
-          margin: 0;
-          color: rgba(255,255,255,0.65);
-        }
-
-        .demoScoreBubble {
-          transition: 0.45s ease;
-        }
-
-        .demoScoreBubble.scene0 {
-          border-color: rgba(255,255,255,0.22);
-        }
-
-        .demoScoreBubble.scene1,
-        .demoScoreBubble.scene3 {
-          transform: scale(1.04);
-          box-shadow: 0 18px 50px rgba(141,255,176,0.12);
-        }
-
-        .demoScoreBubble.scene2 strong {
-          color: #e4cd77;
-        }
-
-        .demoMap {
-          position: relative;
-          min-height: 500px;
-          border-radius: 30px;
-          overflow: hidden;
-          background:
-            linear-gradient(rgba(4,13,8,0.1), rgba(4,13,8,0.72)),
-            url("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1400&auto=format&fit=crop");
-          background-size: cover;
-          background-position: center;
-          border: 1px solid rgba(255,255,255,0.12);
-        }
-
-        .mapGlow {
-          position: absolute;
-          inset: 0;
-          background:
-            radial-gradient(circle at 42% 42%, rgba(141,255,176,0.28), transparent 26%),
-            radial-gradient(circle at 60% 58%, rgba(255,219,117,0.16), transparent 22%);
-        }
-
-        .scanRing {
-          position: absolute;
-          left: 46%;
-          top: 44%;
-          border: 2px solid rgba(141,255,176,0.5);
-          border-radius: 999px;
-          transform: translate(-50%, -50%);
-          animation: mapPulse 2.8s infinite ease-out;
-        }
-
-        .ringOne {
-          width: 120px;
-          height: 120px;
-        }
-
-        .ringTwo {
-          width: 210px;
-          height: 210px;
-          animation-delay: 0.7s;
-        }
-
-        @keyframes mapPulse {
-          from {
-            opacity: 0.8;
-            transform: translate(-50%, -50%) scale(0.8);
-          }
-          to {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(1.4);
-          }
-        }
-
-        .mapPin {
-          position: absolute;
-          padding: 10px 14px;
-          border-radius: 999px;
-          font-weight: 950;
-          border: 1px solid rgba(255,255,255,0.28);
-          background: rgba(5,20,12,0.82);
-          backdrop-filter: blur(16px);
-          box-shadow: 0 16px 40px rgba(0,0,0,0.3);
-          opacity: 0.6;
-          transform: translateY(8px) scale(0.96);
-          transition: 0.45s ease;
-        }
-
-        .mapPin.lit {
-          opacity: 1;
-          transform: translateY(0) scale(1.04);
-          box-shadow: 0 18px 55px rgba(141,255,176,0.16);
-        }
-
-        .mapPin::before {
-          content: "";
-          display: inline-block;
-          width: 8px;
-          height: 8px;
-          border-radius: 999px;
-          margin-right: 8px;
-          background: currentColor;
-        }
-
-        .green {
-          color: #9dffbf;
-        }
-
-        .yellow {
-          color: #e4cd77;
-        }
-
-        .orange {
-          color: #d49a62;
-        }
-
-        .pinOne {
-          left: 38%;
-          top: 35%;
-        }
-
-        .pinTwo {
-          left: 56%;
-          top: 48%;
-        }
-
-        .pinThree {
-          left: 28%;
-          top: 58%;
-        }
-
-        .pinFour {
-          right: 18%;
-          top: 30%;
-        }
-
-        .mapBottomSheet {
-          position: absolute;
-          left: 22px;
-          right: 22px;
-          bottom: 22px;
-          padding: 22px;
-          border-radius: 28px;
-          background: rgba(5,20,12,0.82);
-          border: 1px solid rgba(255,255,255,0.14);
-          backdrop-filter: blur(20px);
-        }
-
-        .mapBottomSheet span {
-          color: #9dffbf;
-          text-transform: uppercase;
-          font-size: 12px;
-          letter-spacing: 1.5px;
           font-weight: 900;
+          margin-bottom: 28px;
         }
 
-        .mapBottomSheet h4 {
-          font-size: 28px;
-          margin: 8px 0;
-        }
-
-        .mapBottomSheet p {
-          font-size: 15px;
-          margin: 0 0 18px;
-        }
-
-        .mapBottomSheet button {
-          width: 100%;
-        }
-
-        .demoSide {
+        .bars {
           display: grid;
-          gap: 24px;
+          gap: 20px;
         }
 
-        .outingCard,
-        .readCard {
-          padding: 26px;
-        }
-
-        .modePills {
-          display: grid;
-          gap: 12px;
-          margin-top: 24px;
-        }
-
-        .modePills div {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 16px;
-          border-radius: 18px;
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.1);
-          font-weight: 900;
-        }
-
-        .modePills svg {
-          color: #9dffbf;
-        }
-
-        .readTop {
+        .barHead {
           display: flex;
           justify-content: space-between;
-          align-items: center;
-          margin-bottom: 24px;
-        }
-
-        .readTop strong {
-          font-size: 42px;
-          color: #e4cd77;
-        }
-
-        .metric {
-          margin-bottom: 20px;
-        }
-
-        .metricHead {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-weight: 900;
+          gap: 14px;
           margin-bottom: 8px;
+          font-weight: 900;
         }
 
-        .metricHead div {
+        .barHead div {
           display: flex;
           align-items: center;
           gap: 9px;
         }
 
-        .metricHead svg {
-          color: #9dffbf;
-        }
-
-        .metricTrack {
-          height: 11px;
+        .barTrack {
+          height: 12px;
           border-radius: 999px;
-          overflow: hidden;
           background: rgba(255,255,255,0.1);
+          overflow: hidden;
         }
 
-        .metricFill {
+        .barFill {
           height: 100%;
           border-radius: inherit;
-          background: linear-gradient(90deg, #8dffb0, #e4cd77);
-        }
-
-        .demoMiniCards {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 16px;
-        }
-
-        .demoMiniCards > div {
-          padding: 22px;
-        }
-
-        .demoMiniCards svg {
-          color: #9dffbf;
-          margin-bottom: 18px;
-        }
-
-        .demoMiniCards h3 {
-          margin: 0 0 8px;
-          font-size: 20px;
-        }
-
-        .demoMiniCards p {
-          margin: 0;
-          font-size: 14px;
+          background: #8dffb0;
         }
 
         .split {
@@ -1398,8 +951,7 @@ export default function App() {
         }
 
         @media (max-width: 1050px) {
-          .hero,
-          .demoGrid {
+          .hero {
             grid-template-columns: 1fr;
           }
 
@@ -1412,11 +964,7 @@ export default function App() {
           .featureGrid,
           .communityGrid,
           .split,
-          .demoMiniCards {
-            grid-template-columns: 1fr;
-          }
-
-          .demoSequence {
+          .demo {
             grid-template-columns: 1fr;
           }
 
@@ -1460,32 +1008,12 @@ export default function App() {
             flex-direction: column;
             gap: 10px;
           }
-
-          .demoMapTop {
-            flex-direction: column;
-          }
-
-          .demoScoreBubble {
-            width: 100%;
-          }
         }
 
         @media (max-width: 520px) {
           .phone {
             width: 300px;
             height: 600px;
-          }
-
-          .demoMapCard {
-            padding: 18px;
-          }
-
-          .demoMap {
-            min-height: 560px;
-          }
-
-          .pinFour {
-            display: none;
           }
         }
       `}</style>
@@ -1524,10 +1052,10 @@ function Post({ image, title, text }) {
   );
 }
 
-function Metric({ icon, label, value }) {
+function Bar({ icon, label, value, width }) {
   return (
-    <div className="metric">
-      <div className="metricHead">
+    <div>
+      <div className="barHead">
         <div>
           {icon}
           <span>{label}</span>
@@ -1535,19 +1063,9 @@ function Metric({ icon, label, value }) {
         <span>{value}</span>
       </div>
 
-      <div className="metricTrack">
-        <div className="metricFill" style={{ width: value }} />
+      <div className="barTrack">
+        <div className="barFill" style={{ width }} />
       </div>
-    </div>
-  );
-}
-
-function DemoMini({ icon, title, text }) {
-  return (
-    <div>
-      {icon}
-      <h3>{title}</h3>
-      <p>{text}</p>
     </div>
   );
 }
