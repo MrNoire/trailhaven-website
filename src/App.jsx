@@ -21,6 +21,8 @@ import {
   Bookmark,
 } from "lucide-react";
 
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/mjglnekz";
+
 const backgrounds = [
   "https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=2400&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=2400&auto=format&fit=crop",
@@ -41,11 +43,34 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
-    if (!email) return;
-    setDone(true);
-    setEmail("");
+
+    if (!email.trim()) return;
+
+    try {
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          project: "TrailHaven Waitlist",
+          source: "trailhaven-website",
+        }),
+      });
+
+      if (response.ok) {
+        setDone(true);
+        setEmail("");
+      } else {
+        alert("Something went wrong. Please try again.");
+      }
+    } catch (error) {
+      alert("Could not submit email. Please try again.");
+    }
   }
 
   return (
