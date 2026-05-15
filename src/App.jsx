@@ -28,12 +28,44 @@ const backgrounds = [
   "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=2400&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?q=80&w=2400&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=2400&auto=format&fit=crop",
+ ];
+
+const demoScenes = [
+  {
+    label: "01 / Choose outing",
+    title: "Pick your trip style",
+    text: "TrailHaven adapts the analysis for hiking, camping, survival practice, or emergency planning.",
+    score: "--",
+    tone: "Tap",
+  },
+  {
+    label: "02 / Scan map",
+    title: "Scan nearby potential",
+    text: "Animated pins reveal stronger and weaker outdoor areas across the map.",
+    score: "72%",
+    tone: "Solid",
+  },
+  {
+    label: "03 / Read place",
+    title: "Understand the place read",
+    text: "Water, shelter, terrain and weather risk are compared before the user commits.",
+    score: "61%",
+    tone: "Good",
+  },
+  {
+    label: "04 / Save & compare",
+    title: "Build an outdoor shortlist",
+    text: "Users save promising locations and compare them for the exact outing they have in mind.",
+    score: "78%",
+    tone: "Saved",
+  },
 ];
 
 export default function App() {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
   const [bg, setBg] = useState(0);
+  const [demoStep, setDemoStep] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -42,6 +74,16 @@ export default function App() {
 
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDemoStep((current) => (current + 1) % demoScenes.length);
+    }, 2800);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const activeScene = demoScenes[demoStep];
 
   async function submit(e) {
     e.preventDefault();
@@ -222,19 +264,34 @@ export default function App() {
             A product-style walkthrough showing how TrailHaven can scan an area,
             score outdoor potential, compare places, and help users plan smarter.
           </p>
+
+          <div className="demoSequence">
+            {demoScenes.map((scene, index) => (
+              <button
+                key={scene.label}
+                type="button"
+                className={`sequenceStep ${index === demoStep ? "active" : ""}`}
+                onClick={() => setDemoStep(index)}
+              >
+                <span>{scene.label}</span>
+                <strong>{scene.title}</strong>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="demoGrid">
           <div className="demoMapCard">
             <div className="demoMapTop">
               <div>
-                <span>Live map scan</span>
-                <h3>Explore nearby survival potential</h3>
+                <span>{activeScene.label}</span>
+                <h3>{activeScene.title}</h3>
+                <p>{activeScene.text}</p>
               </div>
 
-              <div className="demoScoreBubble">
-                <strong>72%</strong>
-                <small>Solid</small>
+              <div className={`demoScoreBubble scene${demoStep}`}>
+                <strong>{activeScene.score}</strong>
+                <small>{activeScene.tone}</small>
               </div>
             </div>
 
@@ -243,10 +300,10 @@ export default function App() {
               <div className="scanRing ringOne"></div>
               <div className="scanRing ringTwo"></div>
 
-              <div className="mapPin green pinOne">77%</div>
-              <div className="mapPin yellow pinTwo">61%</div>
-              <div className="mapPin orange pinThree">49%</div>
-              <div className="mapPin green pinFour">73%</div>
+              <div className={`mapPin green pinOne ${demoStep >= 1 ? "lit" : ""}`}>77%</div>
+              <div className={`mapPin yellow pinTwo ${demoStep >= 2 ? "lit" : ""}`}>61%</div>
+              <div className={`mapPin orange pinThree ${demoStep >= 1 ? "lit" : ""}`}>49%</div>
+              <div className={`mapPin green pinFour ${demoStep >= 3 ? "lit" : ""}`}>73%</div>
 
               <div className="mapBottomSheet">
                 <div>
@@ -877,6 +934,48 @@ export default function App() {
           letter-spacing: -3px;
         }
 
+        .demoSequence {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+          margin-top: 28px;
+        }
+
+        .sequenceStep {
+          text-align: left;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+          padding: 16px;
+          border-radius: 20px;
+          background: rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: white;
+          transition: 0.35s ease;
+        }
+
+        .sequenceStep span {
+          color: rgba(255,255,255,0.48);
+          font-size: 11px;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+          font-weight: 900;
+        }
+
+        .sequenceStep strong {
+          font-size: 14px;
+          line-height: 1.25;
+        }
+
+        .sequenceStep.active {
+          background: rgba(141,255,176,0.14);
+          border-color: rgba(157,255,191,0.45);
+          box-shadow: 0 18px 50px rgba(0,0,0,0.25);
+          transform: translateY(-3px);
+        }
+
+
         .demoGrid {
           display: grid;
           grid-template-columns: 1.2fr 0.8fr;
@@ -924,6 +1023,13 @@ export default function App() {
           max-width: 480px;
         }
 
+        .demoMapTop p {
+          font-size: 15px;
+          margin: 12px 0 0;
+          max-width: 500px;
+          color: rgba(255,255,255,0.64);
+        }
+
         .demoScoreBubble {
           width: 104px;
           height: 104px;
@@ -945,6 +1051,24 @@ export default function App() {
         .demoScoreBubble small {
           margin: 0;
           color: rgba(255,255,255,0.65);
+        }
+
+        .demoScoreBubble {
+          transition: 0.45s ease;
+        }
+
+        .demoScoreBubble.scene0 {
+          border-color: rgba(255,255,255,0.22);
+        }
+
+        .demoScoreBubble.scene1,
+        .demoScoreBubble.scene3 {
+          transform: scale(1.04);
+          box-shadow: 0 18px 50px rgba(141,255,176,0.12);
+        }
+
+        .demoScoreBubble.scene2 strong {
+          color: #e4cd77;
         }
 
         .demoMap {
@@ -1009,6 +1133,15 @@ export default function App() {
           background: rgba(5,20,12,0.82);
           backdrop-filter: blur(16px);
           box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+          opacity: 0.6;
+          transform: translateY(8px) scale(0.96);
+          transition: 0.45s ease;
+        }
+
+        .mapPin.lit {
+          opacity: 1;
+          transform: translateY(0) scale(1.04);
+          box-shadow: 0 18px 55px rgba(141,255,176,0.16);
         }
 
         .mapPin::before {
@@ -1280,6 +1413,10 @@ export default function App() {
           .communityGrid,
           .split,
           .demoMiniCards {
+            grid-template-columns: 1fr;
+          }
+
+          .demoSequence {
             grid-template-columns: 1fr;
           }
 
