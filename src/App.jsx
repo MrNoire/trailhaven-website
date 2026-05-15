@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Map,
   Shield,
   Droplets,
   Trees,
@@ -10,15 +9,18 @@ import {
   Compass,
   Users,
   Star,
-  Play,
   Radio,
   Camera,
   Route,
   Apple,
-  Sparkles,
-  Waves,
   Tent,
+  CloudSun,
+  Waves,
   MessageCircle,
+  Bookmark,
+  X,
+  AlertTriangle,
+  MapPinned,
 } from "lucide-react";
 
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mjglnekz";
@@ -33,9 +35,10 @@ const backgrounds = [
 export default function App() {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [bg, setBg] = useState(0);
+  const [notesOpen, setNotesOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -47,17 +50,10 @@ export default function App() {
 
   async function submit(e) {
     e.preventDefault();
+    if (!email || submitting) return;
 
-    const cleanEmail = email.trim();
-
-    if (!cleanEmail) {
-      setError("Please enter your email first.");
-      return;
-    }
-
-    setLoading(true);
+    setSubmitting(true);
     setError("");
-    setDone(false);
 
     try {
       const response = await fetch(FORMSPREE_ENDPOINT, {
@@ -67,22 +63,22 @@ export default function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: cleanEmail,
+          email,
           project: "TrailHaven Waitlist",
           source: "TrailHaven landing page",
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Formspree submission failed");
+      if (response.ok) {
+        setDone(true);
+        setEmail("");
+      } else {
+        setError("Something went wrong. Please try again.");
       }
-
-      setDone(true);
-      setEmail("");
-    } catch (err) {
-      setError("Could not join the waitlist. Please try again.");
+    } catch {
+      setError("Could not submit email. Please try again.");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   }
 
@@ -137,8 +133,9 @@ export default function App() {
               onChange={(e) => setEmail(e.target.value)}
             />
 
-            <button disabled={loading}>
-              {loading ? "Joining..." : "Join waitlist"} <ArrowRight size={18} />
+            <button disabled={submitting}>
+              {submitting ? "Joining..." : "Join waitlist"}{" "}
+              <ArrowRight size={18} />
             </button>
           </form>
 
@@ -228,37 +225,98 @@ export default function App() {
         </div>
       </section>
 
-      <section className="section demo" id="demo">
-        <div>
-          <div className="sectionHeader">
-            <span>Product vision</span>
-            <h2>A startup-style demo section for the app.</h2>
-          </div>
-
+      <section className="section demoShowcase" id="demo">
+        <div className="demoIntro">
+          <span>Interactive product showcase</span>
+          <h2>See the app think through the outdoors.</h2>
           <p>
-            Later this can become a real video showing the map zoom, survival
-            score, water layer, shelter layer, campsite reviews and community
-            posts.
+            A product-style walkthrough showing how TrailHaven can scan an area,
+            score outdoor potential, compare places, and help users plan smarter.
           </p>
-
-          <button className="watch">
-            <Play size={18} />
-            Watch preview
-          </button>
         </div>
 
-        <div className="demoPanel">
-          <div className="demoTop">
-            <span>Live area scan</span>
-            <Sparkles size={18} />
+        <div className="demoGrid">
+          <div className="demoMapCard">
+            <div className="demoMapTop">
+              <div>
+                <span>Live map scan</span>
+                <h3>Explore nearby survival potential</h3>
+              </div>
+
+              <div className="demoScoreBubble">
+                <strong>72%</strong>
+                <small>Solid</small>
+              </div>
+            </div>
+
+            <div className="demoMap">
+              <div className="mapGlow"></div>
+              <div className="scanRing ringOne"></div>
+              <div className="scanRing ringTwo"></div>
+
+              <div className="mapPin green pinOne">77%</div>
+              <div className="mapPin yellow pinTwo">61%</div>
+              <div className="mapPin orange pinThree">49%</div>
+              <div className="mapPin green pinFour">73%</div>
+
+              <div className="mapBottomSheet">
+                <div>
+                  <span>Forest mountain in Romania</span>
+                  <h4>Carpathian Forest Arc</h4>
+                  <p>Strong shelter value, good water access, mixed terrain risk.</p>
+                </div>
+
+                <button type="button" onClick={() => setNotesOpen(true)}>
+                  View Outdoor Notes <ArrowRight size={16} />
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="bars">
-            <Bar icon={<Waves size={18} />} label="Water access" value="82%" width="82%" />
-            <Bar icon={<Trees size={18} />} label="Shelter score" value="74%" width="74%" />
-            <Bar icon={<Tent size={18} />} label="Camping quality" value="68%" width="68%" />
-            <Bar icon={<MessageCircle size={18} />} label="Community trust" value="91%" width="91%" />
+          <div className="demoSide">
+            <div className="outingCard">
+              <span>Outing modes</span>
+              <h3>Choose what you're planning.</h3>
+
+              <div className="modePills">
+                <div>
+                  <Route size={18} />
+                  Hiking
+                </div>
+                <div>
+                  <Tent size={18} />
+                  Camping
+                </div>
+                <div>
+                  <Compass size={18} />
+                  Survival practice
+                </div>
+                <div>
+                  <Shield size={18} />
+                  Emergency planning
+                </div>
+              </div>
+            </div>
+
+            <div className="readCard">
+              <div className="readTop">
+                <span>Place read</span>
+                <strong>61%</strong>
+              </div>
+
+              <Metric icon={<Droplets size={17} />} label="Water" value="79%" />
+              <Metric icon={<Trees size={17} />} label="Shelter" value="86%" />
+              <Metric icon={<Mountain size={17} />} label="Terrain" value="54%" />
+              <Metric icon={<CloudSun size={17} />} label="Weather risk" value="48%" />
+            </div>
           </div>
+        </div>
+
+        <div className="demoMiniCards">
+          <DemoMini icon={<Waves />} title="Water access" text="Rivers, lakes and nearby water signals." />
+          <DemoMini icon={<Trees />} title="Shelter value" text="Forest cover, terrain and usable protection." />
+          <DemoMini icon={<MessageCircle />} title="Community notes" text="Real observations from people who visited." />
+          <DemoMini icon={<Bookmark />} title="Saved places" text="Compare areas before choosing a trip." />
         </div>
       </section>
 
@@ -309,6 +367,82 @@ export default function App() {
         <strong>TrailHaven</strong>
         <span>Outdoor planning. Survival intelligence. Community knowledge.</span>
       </footer>
+
+      {notesOpen && (
+        <div className="notesModalWrap" onClick={() => setNotesOpen(false)}>
+          <div className="notesModal" onClick={(e) => e.stopPropagation()}>
+            <div className="notesTop">
+              <div>
+                <span>Terrain analysis</span>
+                <h2>Carpathian Forest Arc</h2>
+              </div>
+
+              <button className="closeBtn" onClick={() => setNotesOpen(false)}>
+                <X size={18} /> Close
+              </button>
+            </div>
+
+            <div className="notesHero">
+              <div>
+                <MapPinned size={22} />
+                <span>Outdoor Read</span>
+                <strong>61%</strong>
+                <p>Good potential with moderate terrain and weather risk.</p>
+              </div>
+
+              <div>
+                <AlertTriangle size={22} />
+                <span>Field Warning</span>
+                <strong>Signal drop</strong>
+                <p>Community notes mention weak signal deeper in the valley.</p>
+              </div>
+            </div>
+
+            <div className="notesGrid">
+              <div>
+                <h3>Water Access</h3>
+                <p>
+                  Freshwater streams detected within 1.2km radius. Multiple
+                  downhill flow points nearby.
+                </p>
+              </div>
+
+              <div>
+                <h3>Shelter Potential</h3>
+                <p>
+                  Dense tree coverage supports natural shelter, wind protection,
+                  and short-term survival practice.
+                </p>
+              </div>
+
+              <div>
+                <h3>Terrain Risk</h3>
+                <p>
+                  Moderate elevation changes. Wet ground and muddy paths are
+                  likely after rainfall.
+                </p>
+              </div>
+
+              <div>
+                <h3>Community Notes</h3>
+                <p>
+                  Users report good camping conditions, strong natural cover,
+                  and limited visibility after sunset.
+                </p>
+              </div>
+            </div>
+
+            <div className="aiReadout">
+              <span>AI Analysis</span>
+              <p>
+                This region appears suitable for camping, long hikes, emergency
+                shelter practice and outdoor survival planning. Best used with
+                offline maps, weather checks and backup communication.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         * {
@@ -521,8 +655,8 @@ export default function App() {
         }
 
         button:disabled {
+          opacity: 0.7;
           cursor: not-allowed;
-          opacity: 0.72;
         }
 
         small {
@@ -533,7 +667,7 @@ export default function App() {
         }
 
         .errorText {
-          color: #ffb4a8;
+          color: #ffb5a5;
         }
 
         .proof {
@@ -813,67 +947,343 @@ export default function App() {
           line-height: 1.6;
         }
 
-        .demo {
-          display: grid;
-          grid-template-columns: 0.9fr 1.1fr;
-          gap: 34px;
-          align-items: center;
-        }
-
-        .watch {
-          background: white;
-        }
-
-        .demoPanel {
-          border-radius: 32px;
-          padding: 28px;
-          background:
-            linear-gradient(135deg, rgba(141,255,176,0.12), rgba(255,255,255,0.05)),
-            rgba(0,0,0,0.18);
-          border: 1px solid rgba(255,255,255,0.13);
-        }
-
-        .demoTop {
+        .demoShowcase {
           display: flex;
-          justify-content: space-between;
+          flex-direction: column;
+          gap: 40px;
+          overflow: hidden;
+        }
+
+        .demoIntro {
+          max-width: 820px;
+        }
+
+        .demoIntro span {
+          color: #9dffbf;
           text-transform: uppercase;
           letter-spacing: 2px;
-          color: rgba(255,255,255,0.58);
-          font-size: 12px;
           font-weight: 900;
-          margin-bottom: 28px;
+          font-size: 13px;
         }
 
-        .bars {
+        .demoIntro h2 {
+          font-size: clamp(38px, 5vw, 68px);
+          line-height: 1;
+          margin: 18px 0 24px;
+          letter-spacing: -3px;
+        }
+
+        .demoGrid {
           display: grid;
-          gap: 20px;
+          grid-template-columns: 1.2fr 0.8fr;
+          gap: 24px;
         }
 
-        .barHead {
+        .demoMapCard,
+        .outingCard,
+        .readCard,
+        .demoMiniCards > div {
+          border-radius: 32px;
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.13);
+          backdrop-filter: blur(22px);
+          box-shadow: 0 24px 80px rgba(0,0,0,0.22);
+        }
+
+        .demoMapCard {
+          padding: 26px;
+          min-height: 650px;
+        }
+
+        .demoMapTop {
           display: flex;
           justify-content: space-between;
-          gap: 14px;
-          margin-bottom: 8px;
+          gap: 24px;
+          margin-bottom: 22px;
+        }
+
+        .demoMapTop span,
+        .outingCard span,
+        .readTop span {
+          color: #9dffbf;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          font-weight: 900;
+          font-size: 12px;
+        }
+
+        .demoMapTop h3,
+        .outingCard h3 {
+          font-size: 36px;
+          line-height: 1;
+          margin: 12px 0 0;
+          max-width: 480px;
+        }
+
+        .demoScoreBubble {
+          width: 104px;
+          height: 104px;
+          border-radius: 28px;
+          border: 1px solid rgba(157,255,191,0.5);
+          display: grid;
+          place-items: center;
+          text-align: center;
+          background: rgba(141,255,176,0.08);
+          flex-shrink: 0;
+        }
+
+        .demoScoreBubble strong {
+          display: block;
+          font-size: 30px;
+          color: #9dffbf;
+        }
+
+        .demoScoreBubble small {
+          margin: 0;
+          color: rgba(255,255,255,0.65);
+        }
+
+        .demoMap {
+          position: relative;
+          min-height: 500px;
+          border-radius: 30px;
+          overflow: hidden;
+          background:
+            linear-gradient(rgba(4,13,8,0.1), rgba(4,13,8,0.72)),
+            url("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1400&auto=format&fit=crop");
+          background-size: cover;
+          background-position: center;
+          border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .mapGlow {
+          position: absolute;
+          inset: 0;
+          background:
+            radial-gradient(circle at 42% 42%, rgba(141,255,176,0.28), transparent 26%),
+            radial-gradient(circle at 60% 58%, rgba(255,219,117,0.16), transparent 22%);
+        }
+
+        .scanRing {
+          position: absolute;
+          left: 46%;
+          top: 44%;
+          border: 2px solid rgba(141,255,176,0.5);
+          border-radius: 999px;
+          transform: translate(-50%, -50%);
+          animation: mapPulse 2.8s infinite ease-out;
+        }
+
+        .ringOne {
+          width: 120px;
+          height: 120px;
+        }
+
+        .ringTwo {
+          width: 210px;
+          height: 210px;
+          animation-delay: 0.7s;
+        }
+
+        @keyframes mapPulse {
+          from {
+            opacity: 0.8;
+            transform: translate(-50%, -50%) scale(0.8);
+          }
+          to {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(1.4);
+          }
+        }
+
+        .mapPin {
+          position: absolute;
+          padding: 10px 14px;
+          border-radius: 999px;
+          font-weight: 950;
+          border: 1px solid rgba(255,255,255,0.28);
+          background: rgba(5,20,12,0.82);
+          backdrop-filter: blur(16px);
+          box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+        }
+
+        .mapPin::before {
+          content: "";
+          display: inline-block;
+          width: 8px;
+          height: 8px;
+          border-radius: 999px;
+          margin-right: 8px;
+          background: currentColor;
+        }
+
+        .green {
+          color: #9dffbf;
+        }
+
+        .yellow {
+          color: #e4cd77;
+        }
+
+        .orange {
+          color: #d49a62;
+        }
+
+        .pinOne {
+          left: 38%;
+          top: 35%;
+        }
+
+        .pinTwo {
+          left: 56%;
+          top: 48%;
+        }
+
+        .pinThree {
+          left: 28%;
+          top: 58%;
+        }
+
+        .pinFour {
+          right: 18%;
+          top: 30%;
+        }
+
+        .mapBottomSheet {
+          position: absolute;
+          left: 22px;
+          right: 22px;
+          bottom: 22px;
+          padding: 22px;
+          border-radius: 28px;
+          background: rgba(5,20,12,0.82);
+          border: 1px solid rgba(255,255,255,0.14);
+          backdrop-filter: blur(20px);
+        }
+
+        .mapBottomSheet span {
+          color: #9dffbf;
+          text-transform: uppercase;
+          font-size: 12px;
+          letter-spacing: 1.5px;
           font-weight: 900;
         }
 
-        .barHead div {
+        .mapBottomSheet h4 {
+          font-size: 28px;
+          margin: 8px 0;
+        }
+
+        .mapBottomSheet p {
+          font-size: 15px;
+          margin: 0 0 18px;
+        }
+
+        .mapBottomSheet button {
+          width: 100%;
+        }
+
+        .demoSide {
+          display: grid;
+          gap: 24px;
+        }
+
+        .outingCard,
+        .readCard {
+          padding: 26px;
+        }
+
+        .modePills {
+          display: grid;
+          gap: 12px;
+          margin-top: 24px;
+        }
+
+        .modePills div {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          border-radius: 18px;
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.1);
+          font-weight: 900;
+        }
+
+        .modePills svg {
+          color: #9dffbf;
+        }
+
+        .readTop {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 24px;
+        }
+
+        .readTop strong {
+          font-size: 42px;
+          color: #e4cd77;
+        }
+
+        .metric {
+          margin-bottom: 20px;
+        }
+
+        .metricHead {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-weight: 900;
+          margin-bottom: 8px;
+        }
+
+        .metricHead div {
           display: flex;
           align-items: center;
           gap: 9px;
         }
 
-        .barTrack {
-          height: 12px;
-          border-radius: 999px;
-          background: rgba(255,255,255,0.1);
-          overflow: hidden;
+        .metricHead svg {
+          color: #9dffbf;
         }
 
-        .barFill {
+        .metricTrack {
+          height: 11px;
+          border-radius: 999px;
+          overflow: hidden;
+          background: rgba(255,255,255,0.1);
+        }
+
+        .metricFill {
           height: 100%;
           border-radius: inherit;
-          background: #8dffb0;
+          background: linear-gradient(90deg, #8dffb0, #e4cd77);
+        }
+
+        .demoMiniCards {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 16px;
+        }
+
+        .demoMiniCards > div {
+          padding: 22px;
+        }
+
+        .demoMiniCards svg {
+          color: #9dffbf;
+          margin-bottom: 18px;
+        }
+
+        .demoMiniCards h3 {
+          margin: 0 0 8px;
+          font-size: 20px;
+        }
+
+        .demoMiniCards p {
+          margin: 0;
+          font-size: 14px;
         }
 
         .split {
@@ -950,8 +1360,136 @@ export default function App() {
           color: white;
         }
 
+        .notesModalWrap {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.72);
+          backdrop-filter: blur(16px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          z-index: 999;
+          animation: modalFade 0.25s ease both;
+        }
+
+        .notesModal {
+          width: min(960px, 100%);
+          max-height: min(86vh, 900px);
+          overflow-y: auto;
+          border-radius: 36px;
+          padding: 34px;
+          background: rgba(5,20,12,0.96);
+          border: 1px solid rgba(255,255,255,0.14);
+          box-shadow: 0 40px 120px rgba(0,0,0,0.5);
+          animation: modalRise 0.35s ease both;
+        }
+
+        @keyframes modalFade {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes modalRise {
+          from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.98);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        .notesTop {
+          display: flex;
+          justify-content: space-between;
+          gap: 20px;
+          margin-bottom: 26px;
+        }
+
+        .notesTop span,
+        .aiReadout span,
+        .notesHero span {
+          color: #9dffbf;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          font-size: 12px;
+          font-weight: 900;
+        }
+
+        .notesTop h2 {
+          font-size: clamp(34px, 6vw, 58px);
+          line-height: 1;
+          margin: 12px 0 0;
+          letter-spacing: -2px;
+        }
+
+        .closeBtn {
+          background: rgba(255,255,255,0.1);
+          color: white;
+          height: fit-content;
+        }
+
+        .notesHero {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 18px;
+          margin-bottom: 18px;
+        }
+
+        .notesHero > div,
+        .notesGrid div,
+        .aiReadout {
+          padding: 24px;
+          border-radius: 24px;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .notesHero svg {
+          color: #9dffbf;
+          margin-bottom: 16px;
+        }
+
+        .notesHero strong {
+          display: block;
+          font-size: 28px;
+          margin: 8px 0 0;
+        }
+
+        .notesHero p,
+        .notesGrid p,
+        .aiReadout p {
+          margin-bottom: 0;
+          font-size: 15px;
+          line-height: 1.65;
+        }
+
+        .notesGrid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 18px;
+        }
+
+        .notesGrid h3 {
+          margin-top: 0;
+          font-size: 22px;
+        }
+
+        .aiReadout {
+          margin-top: 18px;
+          background: linear-gradient(
+            135deg,
+            rgba(141,255,176,0.12),
+            rgba(255,255,255,0.04)
+          );
+          border: 1px solid rgba(141,255,176,0.2);
+        }
+
         @media (max-width: 1050px) {
-          .hero {
+          .hero,
+          .demoGrid {
             grid-template-columns: 1fr;
           }
 
@@ -964,7 +1502,9 @@ export default function App() {
           .featureGrid,
           .communityGrid,
           .split,
-          .demo {
+          .demoMiniCards,
+          .notesHero,
+          .notesGrid {
             grid-template-columns: 1fr;
           }
 
@@ -1008,12 +1548,37 @@ export default function App() {
             flex-direction: column;
             gap: 10px;
           }
+
+          .demoMapTop,
+          .notesTop {
+            flex-direction: column;
+          }
+
+          .demoScoreBubble {
+            width: 100%;
+          }
+
+          .notesModal {
+            padding: 24px;
+          }
         }
 
         @media (max-width: 520px) {
           .phone {
             width: 300px;
             height: 600px;
+          }
+
+          .demoMapCard {
+            padding: 18px;
+          }
+
+          .demoMap {
+            min-height: 560px;
+          }
+
+          .pinFour {
+            display: none;
           }
         }
       `}</style>
@@ -1052,10 +1617,10 @@ function Post({ image, title, text }) {
   );
 }
 
-function Bar({ icon, label, value, width }) {
+function Metric({ icon, label, value }) {
   return (
-    <div>
-      <div className="barHead">
+    <div className="metric">
+      <div className="metricHead">
         <div>
           {icon}
           <span>{label}</span>
@@ -1063,9 +1628,19 @@ function Bar({ icon, label, value, width }) {
         <span>{value}</span>
       </div>
 
-      <div className="barTrack">
-        <div className="barFill" style={{ width }} />
+      <div className="metricTrack">
+        <div className="metricFill" style={{ width: value }} />
       </div>
+    </div>
+  );
+}
+
+function DemoMini({ icon, title, text }) {
+  return (
+    <div>
+      {icon}
+      <h3>{title}</h3>
+      <p>{text}</p>
     </div>
   );
 }
