@@ -880,17 +880,22 @@ export default function App() {
 
         .miniStats {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 10px;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 8px;
+          width: 100%;
         }
 
         .miniStats div {
           background: rgba(255,255,255,0.09);
           border-radius: 18px;
-          padding: 13px;
+          padding: 12px 10px;
           display: flex;
           flex-direction: column;
-          gap: 5px;
+          gap: 4px;
+          align-items: center;
+          justify-content: center;
+          min-width: 0;
+          overflow: hidden;
         }
 
         .miniStats svg {
@@ -898,13 +903,15 @@ export default function App() {
         }
 
         .miniStats b {
-          font-size: 20px;
+          font-size: 18px;
+          line-height: 1;
         }
 
         .miniStats small {
           margin: 0;
           color: rgba(255,255,255,0.6);
-          font-size: 11px;
+          font-size: 10px;
+          text-align: center;
         }
 
         .sideCards {
@@ -1134,7 +1141,7 @@ export default function App() {
 
         .demoMap {
           position: relative;
-          min-height: 500px;
+          min-height: 620px;
           border-radius: 30px;
           overflow: hidden;
           background:
@@ -1268,9 +1275,9 @@ export default function App() {
 
         .mapLegend {
           position: absolute;
-          left: 22px;
-          right: 22px;
-          top: 22px;
+          left: 18px;
+          right: 18px;
+          top: 18px;
           display: flex;
           gap: 14px;
           flex-wrap: wrap;
@@ -1305,7 +1312,7 @@ export default function App() {
           position: absolute;
           left: 22px;
           right: 22px;
-          bottom: 22px;
+          bottom: 12px;
           padding: 22px;
           border-radius: 28px;
           background: rgba(5,20,12,0.82);
@@ -1732,15 +1739,57 @@ export default function App() {
           }
 
           .demoMapCard {
-            padding: 18px;
+            padding: 14px;
           }
 
           .demoMap {
-            min-height: 560px;
+            min-height: 700px;
+          }
+
+          .mapBottomSheet {
+            left: 14px;
+            right: 14px;
+            bottom: 14px;
+            padding: 18px;
+          }
+
+          .mapBottomSheet h4 {
+            font-size: 22px;
+          }
+
+          .mapLegend {
+            left: 12px;
+            right: 12px;
+            top: 12px;
+            padding: 10px;
+            gap: 8px;
+            border-radius: 18px;
+            font-size: 11px;
           }
 
           .pinFour {
             display: none;
+          }
+
+          .demoMapTop h3 {
+            font-size: 28px;
+          }
+
+          .demoMapTop p {
+            font-size: 14px;
+          }
+
+          .demoScoreBubble {
+            height: 84px;
+          }
+
+          .mapPin {
+            padding: 8px 12px;
+            font-size: 13px;
+          }
+
+          .miniStats {
+            gap: 6px;
           }
         }
       `}</style>
